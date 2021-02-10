@@ -14,30 +14,39 @@ DRI-GLUCoSE — Work in Progress
       - [Figures](#figures)
       - [Summary Statistics](#summary-statistics)
   - [About](#about)
-      - [Package contributors:](#package-contributors)
-      - [Thesis authors:](#thesis-authors)
+      - [Package contributors](#package-contributors)
+      - [Thesis authors](#thesis-authors)
   - [Bibliography](#bibliography)
 
-As elaborated in our recent analyses (Walker et al. 2019; Scarpone et
-al. 2020), nearly all previous studies in the literature use either
+As elaborated in our recent analyses (Walker et al. 2019; Scarpone et
+al. 2020), nearly all previous studies in the literature use either
 census unit boundaries or simple buffer zones to measure an individual’s
 built environment (BE) exposures or to characterize their local
-socioeconomic status (SES) (Rhew et al. 2011, Gong et al. 2014, Fuertes
-et al. 2014). Therefore, we present a distance-weighted, network-based
-model for quantifying the combined effects of local greenspace and SES
-on diabetes risk, from which we derive an area-based Diabetes Risk Index
-of Greenspace, Land Use and Socioeconomic Environments (DRI-GLUCoSE).  
-The goal of the DRIGLUCoSE package is to provide a public package
+socioeconomic status (SES) (Gong et al. 2014; Fuertes et al. 2014).
+Therefore, we present a distance-weighted, network-based model for
+quantifying the combined effects of local greenspace and SES on diabetes
+risk, from which we derive an area-based Diabetes Risk Index of
+Greenspace, Land Use and Socioeconomic Environments (DRI-GLUCoSE).  
+The goal of the `DRIGLUCoSE` package is to provide a public package
 containing functions and code used in the development of the DRI-GLUCoSE
 Index.
 
 # Installation
 
-You can install the latest version of DRIGLUCoSE from
-[GitHub](https://CRAN.R-project.org) with:
+This package depends on the
+[sfnetworks](https://github.com/luukvdmeer/sfnetworks) package. It is
+still in very active development. Therefore, the package is also not on
+CRAN yet. Install it directly from GitHub using the `remotes` package in
+R.
 
 ``` r
-devtools::install_git("https://github.com/STBrinkmann/DRIGLUCoSE")
+remotes::install_github("luukvdmeer/sfnetworks")
+```
+
+You can install the latest version of `DRIGLUCoSE` from GitHub with:
+
+``` r
+remotes::install_git("https://github.com/STBrinkmann/DRIGLUCoSE")
 ```
 
 Once installed, the library can be loaded as follows:
@@ -116,7 +125,7 @@ Vegetation Index
 ([NDVI](https://gisgeography.com/ndvi-normalized-difference-vegetation-index/))
 is used as a metric to model greenspace exposure. Pre-processing of the
 LANDSAT images and NDVI calculation has been conducted using the
-*LS\_L1C* function:
+`LS_L1C` function:
 
 ``` r
 DRIGLUCoSE::LS_L1C(l1c_path = "docs/LC08_L1TP_193026_20200423_20200508_01_T1_small/", 
@@ -148,10 +157,11 @@ or SES decreases as distance from the home increases.
 ### (i) Road network data and isochrones
 
 In order to compute network-based distance metrics, we acquired street
-data from OpenStreetMap using the R-package *osmdata* (Padgham et
-al. 2017). Road types not suitable for walking were removed (e.g.,
+data from OpenStreetMap using the R-package `osmdata` (Padgham et al.
+2017). Road types not suitable for walking were removed (e.g.,
 motorways). Network data were topologically corrected and split into
-\~20 metre-long segments using the R package *nngeo* (Dorman 2020).
+\~20 metre-long segments using the R package `nngeo` (Michael Dorman
+2020).
 
 ``` r
 erlangen.osm <- DRIGLUCoSE::osm_roads(x = Erlangen, dist = 20, 
@@ -162,12 +172,10 @@ This network data was used to derive walking distance buffers for each
 participant, based on walking speed. Starting from each participant’s
 place of residence, we computed network-constrained buffers with an
 off-road width of 40 meters, running in 2-minute increments from 0 to 20
-minutes, using the A\*-algorithm (Hart, Nilsson & Raphael 1968). This
+minutes, using the A\*-algorithm (Hart, Nilsson, and Raphael 1968). This
 therefore resulted in each participant having ten concentric isochrones,
 the sizes of which are a function of individual walking speed and road
-network.  
-Since the road network contains a lot of features (n=14420), this will
-take some time (\~15-30 minutes).
+network.
 
 ``` r
 erlangen.isodistances <- DRIGLUCoSE::isodistances(x = Erlangen, 
@@ -182,33 +190,33 @@ erlangen.isochrones <- DRIGLUCoSE::isochrones(x = erlangen.isodistances,
                                               buffer = 40, cores = 2)
 erlangen.isochrones
 #> Simple feature collection with 20 features and 2 fields
-#> geometry type:  POLYGON
+#> geometry type:  GEOMETRY
 #> dimension:      XY
-#> bbox:           xmin: 34033.6 ymin: -160836.2 xmax: 37706.61 ymax: -157758.7
+#> bbox:           xmin: 34034 ymin: -160951 xmax: 37750 ymax: -157811
 #> projected CRS:  ETRS89 / LCC Germany (N-E)
 #> # A tibble: 20 x 3
-#>      tag time                                                               geom
-#>  * <dbl> <chr>                                                     <POLYGON [m]>
-#>  1     1 2     ((35069.53 -159364.5, 35069.53 -159364.1, 35069.56 -159363.5, 35~
-#>  2     1 4     ((34939.85 -159373.8, 34940.23 -159373.4, 34940.61 -159372.9, 34~
-#>  3     1 6     ((34892.51 -159333.3, 34892.51 -159332.4, 34892.52 -159332.3, 34~
-#>  4     1 8     ((34892.51 -159333.3, 34892.51 -159332.4, 34892.52 -159332.3, 34~
-#>  5     1 10    ((34832.45 -159080.6, 34832.44 -159080, 34832.45 -159079.7, 3483~
-#>  6     1 12    ((34609.81 -159190.6, 34607.8 -159191.1, 34605.76 -159191.6, 346~
-#>  7     1 14    ((34491.75 -159216.3, 34491.53 -159216.4, 34489.45 -159216.6, 34~
-#>  8     1 16    ((34314.4 -159277.6, 34312.43 -159278.3, 34310.41 -159278.9, 343~
-#>  9     1 18    ((34137.69 -159298.2, 34136.14 -159296.8, 34134.67 -159295.3, 34~
-#> 10     1 20    ((34033.61 -159310, 34033.6 -159309.9, 34033.63 -159308.9, 34033~
-#> 11     2 2     ((36169.37 -159274.8, 36169.3 -159274.8, 36143.99 -159271.6, 361~
-#> 12     2 4     ((35937.49 -159174.3, 35937.53 -159174.1, 35937.8 -159173.3, 359~
-#> 13     2 6     ((35842.74 -159227.6, 35841.66 -159227.5, 35839.58 -159227.3, 35~
-#> 14     2 8     ((35660.08 -159105.1, 35659.91 -159105.1, 35654.15 -159102.5, 35~
-#> 15     2 10    ((36942.64 -159679.2, 36942.96 -159679.6, 36944.31 -159681.2, 36~
-#> 16     2 12    ((35368.96 -158950.9, 35368.23 -158950.5, 35366.45 -158949.4, 35~
-#> 17     2 14    ((35212.62 -158969.4, 35212.55 -158968.6, 35212.47 -158966.6, 35~
-#> 18     2 16    ((35503.8 -159156.6, 35503.85 -159156.6, 35504.41 -159157.4, 355~
-#> 19     2 18    ((34982.31 -158901.1, 34982.26 -158899, 34982.31 -158896.9, 3498~
-#> 20     2 20    ((34832.45 -159080.6, 34832.44 -159080, 34832.45 -159079.7, 3483~
+#>      tag  time                                                              geom
+#>  * <dbl> <dbl>                                                    <GEOMETRY [m]>
+#>  1     1     2 POLYGON ((35070.01 -159364.4, 35070.01 -159364.3, 35070.05 -1593~
+#>  2     1     4 POLYGON ((34939.9 -159373.7, 34939.9 -159373.7, 34939.9 -159373.~
+#>  3     1     6 MULTIPOLYGON (((35122.04 -159796.6, 35121.24 -159795.8, 35119.83~
+#>  4     1     8 MULTIPOLYGON (((35381.94 -159465.4, 35381.67 -159465.3, 35379.73~
+#>  5     1    10 MULTIPOLYGON (((35202.91 -159978.5, 35202.52 -159976.4, 35202.24~
+#>  6     1    12 MULTIPOLYGON (((34785.32 -159753, 34785.29 -159752.8, 34781.29 -~
+#>  7     1    14 MULTIPOLYGON (((35074.41 -160199.5, 35073.91 -160197.5, 35073.52~
+#>  8     1    16 MULTIPOLYGON (((34917.7 -160026.6, 34916.67 -160024.8, 34915.74 ~
+#>  9     1    18 MULTIPOLYGON (((35274.98 -160596.8, 35274.87 -160596.3, 35274.49~
+#> 10     1    20 MULTIPOLYGON (((35259.52 -160806.4, 35258.77 -160804.6, 35258.06~
+#> 11     2     2 POLYGON ((36168.94 -159274.7, 36144.23 -159271.7, 36142.16 -1592~
+#> 12     2     4 POLYGON ((35995.6 -159233.7, 35975.79 -159226.8, 35973.83 -15922~
+#> 13     2     6 POLYGON ((35822.47 -159166.2, 35822.21 -159165.7, 35821.22 -1591~
+#> 14     2     8 MULTIPOLYGON (((36811.11 -159633.3, 36810.49 -159634, 36810.41 -~
+#> 15     2    10 MULTIPOLYGON (((35928.36 -159544.3, 35928.19 -159543.7, 35926.19~
+#> 16     2    12 MULTIPOLYGON (((35950.69 -159884.5, 35951 -159883.5, 35951.32 -1~
+#> 17     2    14 MULTIPOLYGON (((36704.16 -160015.9, 36682.73 -160017.3, 36682.82~
+#> 18     2    16 MULTIPOLYGON (((36662.22 -159980, 36662.1 -159978.9, 36662.01 -1~
+#> 19     2    18 MULTIPOLYGON (((35846.36 -160338.5, 35846.43 -160338.4, 35846.75~
+#> 20     2    20 MULTIPOLYGON (((35746 -160426, 35746 -160423, 35746.05 -160420.9~
 ```
 
 Figure 1 shows isodistances of the two points of the sample data in
@@ -225,11 +233,13 @@ decreases with increasing distance from the household, i.e., features
 that are farther away have less influence than nearby features, as
 illustrated in Figure 2. A logit function was selected as it
 heuristically approximates a suitable distance-decay function (Bauer and
-Groneberg 2016; Jia et al. 2019).  
+Groneberg 2016; Jia, Wang, and Xierali 2019).  
 The distance-weighting is separated in two parts, first the logit
 function (1) that is used for both SES and greenspace variables, and
 second the proportional weights function (4) that is only applied on SES
 variables.
+
+<center>
 
   
 ![&#10;\\begin{align\*}&#10; G\_t =&#10; \\begin{cases}&#10;
@@ -249,11 +259,15 @@ g(r)dr}{\\int\_0^{r\_{t\_{max}}} \\, g(r)dr}, t\>1&#10;
 \\end{align*}
 ")  
 
+</center>
+
 Each isochrone ![t](https://latex.codecogs.com/svg.latex?t "t") is
 assigned a distance weight
 ![G\_T](https://latex.codecogs.com/svg.latex?G_T "G_T"), calculated as
 the integral of the logistic distance decay function
 ![g(r)](https://latex.codecogs.com/svg.latex?g%28r%29 "g(r)") (2)
+
+<center>
 
   
 ![&#10;\\begin{align\*}&#10; g(r) =&#10; \\cfrac{1}{1 + e^{ \\,b
@@ -267,6 +281,8 @@ the integral of the logistic distance decay function
 \\end{align*}
 ")  
 
+</center>
+
 with ![b = 8](https://latex.codecogs.com/svg.latex?b%20%3D%208 "b = 8")
 and ![m = 0.6](https://latex.codecogs.com/svg.latex?m%20%3D%200.6
 "m = 0.6"), in the interval between the mean inner radius
@@ -279,6 +295,8 @@ the integral from 0 to the outermost isochrone boundary
 to describe the greenspace (e.g. mean or minimum NDVI) are thus
 described as (3)
 
+<center>
+
   
 ![&#10;\\begin{align\*}&#10; \\sum\_t G\_t \\, f(NDVI\_t \\, \\cap \\,
 I\_t)&#10; &&
@@ -290,8 +308,12 @@ I\_t)&#10; &&
 \\end{align*}
 ")  
 
+</center>
+
 For SES variables the proportional weights of the census areas within
 the isochrone are further defined as (4)
+
+<center>
 
   
 ![&#10;\\begin{align\*}&#10; A\_{tj} =&#10; \\cfrac{A(C\_j \\, \\cap \\,
@@ -306,6 +328,8 @@ I\_t)}&#10; {A(I\_t)}&#10; &&
 \\end{align*}
 ")  
 
+</center>
+
 with the proportion of the area of the intersection of the census area
 ![C\_j](https://latex.codecogs.com/svg.latex?C_j "C_j") and the
 isochrone ![I\_t](https://latex.codecogs.com/svg.latex?I_t "I_t"), and
@@ -315,6 +339,8 @@ value of the SES variable
 ![x\_i](https://latex.codecogs.com/svg.latex?x_i "x_i") in the census
 area ![j](https://latex.codecogs.com/svg.latex?j "j") is then defined as
 (5)
+
+<center>
 
   
 ![&#10;\\begin{align\*}&#10; \\sum\_t \\left( \\ G\_t \\ \\sum\_j \\,
@@ -326,6 +352,8 @@ x\_{ij} \\; A{tj} \\right)&#10; &&
     && \\text{(5)}
 \\end{align*}
 ")  
+
+</center>
 
 Figure 2 visualizes the different submodels used for distance-weighting
 SES and greenspace. Fig. 2a shows the unweighted values of a SES
@@ -350,8 +378,8 @@ lines indicate the isochrones.
   
   
 The distance-weighting for the LANDSAT derived NDVI raster (greenspace
-exposure) is handled using *LS\_band\_weighting*, and SES distance- and
-areal-weighting using *census\_weighting*.
+exposure) is handled using `LS_band_weightin`, and SES distance- and
+areal-weighting using `census_weighting`.
 
 ``` r
 # Calculate sd, median, 5th percentile, 95th percentile and skew of NDVI values
@@ -365,26 +393,26 @@ NDVI_weighted <-
                                              list("percentile", 0.05), 
                                              list("percentile", 0.95),
                                              "skew"), 
-                                b = 8, m = 0.6)
+                                b = 8, m = 0.6, cores = 2)
 
 NDVI_weighted
 #> # A tibble: 2 x 6
-#>     tag    sd median X5_percentile X95_percentile    skew
-#>   <dbl> <dbl>  <dbl>         <dbl>          <dbl>   <dbl>
-#> 1     1 0.204  0.597         0.261          0.906 -0.133 
-#> 2     2 0.143  0.561         0.321          0.790 -0.0302
+#>     tag    sd median X5_percentile X95_percentile     skew
+#>   <dbl> <dbl>  <dbl>         <dbl>          <dbl>    <dbl>
+#> 1     1 0.206  0.601         0.272          0.908 -0.110  
+#> 2     2 0.102  0.538         0.367          0.709  0.00458
 ```
 
 ``` r
 census_weighted <- DRIGLUCoSE::census_weighting(isochrones = erlangen.isochrones, 
                                                 tag = "tag", census = census, 
-                                                b = 8, m = 0.6)
+                                                b = 8, m = 0.6, cores = 2)
 census_weighted
 #> # A tibble: 2 x 4
 #>     tag census_var_a census_var_b census_var_c
 #>   <dbl>        <dbl>        <dbl>        <dbl>
-#> 1     1         522.        5215.      128452.
-#> 2     2         521.        5477.      124588.
+#> 1     1         554.        5267.      130635.
+#> 2     2         551.        5416.      124485.
 ```
 
 # Appendix
@@ -395,8 +423,8 @@ census_weighted
 
 <caption>
 
-Table A.1: Logistic models for all multivariable models with odds
-ratios, 95% CI, and p-values.
+Table A.1: Logistic models for all multivariable models with odds ratios
+(OR) for diabetes, 95% CI, and p-values.
 
 </caption>
 
@@ -438,31 +466,31 @@ Parameter
 
 </th>
 
-<th style="text-align:center;font-weight: bold;">
+<th style="text-align:right;font-weight: bold;">
 
 OR<br>(bivariate)
 
 </th>
 
-<th style="text-align:center;font-weight: bold;">
+<th style="text-align:right;font-weight: bold;">
 
 OR<br>(WHR-adjusted)
 
 </th>
 
-<th style="text-align:center;font-weight: bold;">
+<th style="text-align:right;font-weight: bold;">
 
 OR<br>(BMI-adjusted)
 
 </th>
 
-<th style="text-align:center;font-weight: bold;">
+<th style="text-align:right;font-weight: bold;">
 
 OR<br>(WHR-adjusted)
 
 </th>
 
-<th style="text-align:center;font-weight: bold;">
+<th style="text-align:right;font-weight: bold;">
 
 OR<br>(BMI-adjusted)
 
@@ -482,33 +510,33 @@ DRI-GLUCoSE Score
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.4 (0.3-0.54,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
-
-0.55 (0.43-0.7,<br>p-value\<0.001)
+0.41 (0.30-0.54,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.59 (0.46-0.76,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
-
-0.5 (0.38-0.64,<br>p-value\<0.001)
+0.55 (0.43-0.70,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.57 (0.43-0.75,<br>p-value\<0.001)
+0.59 (0.46-0.76,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
+
+0.57 (0.44-0.73,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
+
+0.67 (0.51-0.88,<br>p=0.004)
 
 </td>
 
@@ -522,33 +550,33 @@ Age (5 year-interval)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-1.27 (1.19-1.36,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
-
-1.2 (1.14-1.26,<br>p-value\<0.001)
+1.27 (1.19-1.35,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-1.26 (1.2-1.32,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
-
-1.19 (1.13-1.26,<br>p-value\<0.001)
+1.19 (1.14-1.25,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-1.23 (1.17-1.3,<br>p-value\<0.001)
+1.27 (1.21-1.33,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
+
+1.18 (1.12-1.25,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
+
+1.20 (1.14-1.27,<br>p\<0.001)
 
 </td>
 
@@ -562,33 +590,33 @@ Sex: female
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.61 (0.48-0.76,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
-
-0.89 (0.74-1.06,<br>p-value=0.19)
+0.60 (0.47-0.75,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.46 (0.38-0.54,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
-
-0.83 (0.67-1.02,<br>p-value=0.078)
+0.88 (0.74-1.04,<br>p=0.126)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.43 (0.35-0.52,<br>p-value\<0.001)
+0.49 (0.42-0.57,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
+
+0.80 (0.66-0.97,<br>p=0.026)
+
+</td>
+
+<td style="text-align:right;">
+
+0.46 (0.39-0.56,<br>p\<0.001)
 
 </td>
 
@@ -602,29 +630,29 @@ Obese (WHR)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-5.54 (4.24-7.33,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
-
-5.96 (4.97-7.16,<br>p-value\<0.001)
+5.58 (4.19-7.25,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
+
+5.80 (4.85-6.95,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
-
-5.02 (4.08-6.19,<br>p-value\<0.001)
+<td style="text-align:right;">
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
+
+4.47 (3.64-5.49,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
 
 </td>
 
@@ -638,29 +666,29 @@ BMI
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-1.14 (1.12-1.16,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
+1.14 (1.12-1.16,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
-
-1.15 (1.13-1.17,<br>p-value\<0.001)
+<td style="text-align:right;">
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
+
+1.15 (1.13-1.17,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-1.14 (1.12-1.16,<br>p-value\<0.001)
+</td>
+
+<td style="text-align:right;">
+
+1.16 (1.14-1.18,<br>p\<0.001)
 
 </td>
 
@@ -674,33 +702,33 @@ Household income range
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.74 (0.69-0.8,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
-
-0.87 (0.82-0.92,<br>p-value\<0.001)
+0.75 (0.70-0.80,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.85 (0.8-0.9,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
-
-0.84 (0.79-0.9,<br>p-value\<0.001)
+0.87 (0.82-0.92,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.82 (0.77-0.88,<br>p-value\<0.001)
+0.86 (0.81-0.92,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
+
+0.85 (0.79-0.91,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
+
+0.83 (0.78-0.89,<br>p\<0.001)
 
 </td>
 
@@ -714,33 +742,33 @@ Neighbourhood type: urban
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.88 (0.67-1.16,<br>p-value=0.385)
-
-</td>
-
-<td style="text-align:center;">
-
-0.69 (0.56-0.86,<br>p-value\<0.001)
+0.86 (0.65-1.12,<br>p=0.276)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.72 (0.58-0.9,<br>p-value=0.003)
-
-</td>
-
-<td style="text-align:center;">
-
-0.54 (0.42-0.69,<br>p-value\<0.001)
+0.71 (0.58-0.88,<br>p=0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.64 (0.5-0.82,<br>p-value\<0.001)
+0.75 (0.61-0.92,<br>p=0.007)
+
+</td>
+
+<td style="text-align:right;">
+
+0.60 (0.48-0.76,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
+
+0.75 (0.59-0.94,<br>p=0.014)
 
 </td>
 
@@ -754,29 +782,29 @@ AHEI Score (E^1)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.76 (0.68-0.85,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
+0.78 (0.69-0.87,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
 </td>
 
-<td style="text-align:center;">
-
-0.87 (0.79-0.96,<br>p-value=0.005)
+<td style="text-align:right;">
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.92 (0.84-1.02,<br>p-value=0.126)
+0.88 (0.80-0.97,<br>p=0.011)
+
+</td>
+
+<td style="text-align:right;">
+
+0.96 (0.87-1.06,<br>p=0.403)
 
 </td>
 
@@ -786,33 +814,33 @@ AHEI Score (E^1)
 
 <td style="text-align:left;">
 
-Physical Activity MET Score
+Recreation Met Score: d\>=525
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.74 (0.63-0.88,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
+0.56 (0.44-0.71,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
 </td>
 
-<td style="text-align:center;">
-
-0.9 (0.78-1.03,<br>p-value=0.134)
+<td style="text-align:right;">
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-0.92 (0.8-1.06,<br>p-value=0.272)
+0.90 (0.76-1.08,<br>p=0.271)
+
+</td>
+
+<td style="text-align:right;">
+
+0.83 (0.69-1.00,<br>p=0.046)
 
 </td>
 
@@ -826,29 +854,29 @@ Current/Former smoker: yes
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-1.66 (1.32-2.09,<br>p-value\<0.001)
-
-</td>
-
-<td style="text-align:center;">
+1.65 (1.31-2.08,<br>p\<0.001)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
 </td>
 
-<td style="text-align:center;">
-
-1.43 (1.18-1.74,<br>p-value\<0.001)
+<td style="text-align:right;">
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-1.27 (1.04-1.54,<br>p-value=0.018)
+1.50 (1.25-1.79,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
+
+1.34 (1.12-1.61,<br>p=0.002)
 
 </td>
 
@@ -862,29 +890,29 @@ Alcohol: \<1 drink/day
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-1.19 (0.92-1.54,<br>p-value=0.184)
-
-</td>
-
-<td style="text-align:center;">
+1.17 (0.91-1.51,<br>p=0.225)
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
 </td>
 
-<td style="text-align:center;">
-
-2.11 (1.69-2.64,<br>p-value\<0.001)
+<td style="text-align:right;">
 
 </td>
 
-<td style="text-align:center;">
+<td style="text-align:right;">
 
-1.81 (1.45-2.26,<br>p-value\<0.001)
+1.60 (1.31-1.97,<br>p\<0.001)
+
+</td>
+
+<td style="text-align:right;">
+
+1.45 (1.18-1.79,<br>p\<0.001)
 
 </td>
 
@@ -896,7 +924,7 @@ Alcohol: \<1 drink/day
 
   
 
-<table style='width:90%; font-family: "Arial Narrow", "Source Sans Pro", sans-serif; width: auto !important; margin-left: auto; margin-right: auto;' class=" lightable-classic">
+<table style='width:90%;border-bottom: 0; font-family: "Arial Narrow", "Source Sans Pro", sans-serif; width: auto !important; margin-left: auto; margin-right: auto;' class=" lightable-classic">
 
 <caption>
 
@@ -976,7 +1004,41 @@ OR<br>(BMI-adjusted)
 
 <td style="text-align:left;">
 
-Sensitivity
+Probability Threshold \*
+
+</td>
+
+<td style="text-align:center;">
+
+0.46
+
+</td>
+
+<td style="text-align:center;">
+
+0.45
+
+</td>
+
+<td style="text-align:center;">
+
+0.45
+
+</td>
+
+<td style="text-align:center;">
+
+0.51
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Accuracy
 
 </td>
 
@@ -994,13 +1056,81 @@ Sensitivity
 
 <td style="text-align:center;">
 
-0.69
+0.75
+
+</td>
+
+<td style="text-align:center;">
+
+0.74
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+AROC
+
+</td>
+
+<td style="text-align:center;">
+
+0.76
 
 </td>
 
 <td style="text-align:center;">
 
 0.78
+
+</td>
+
+<td style="text-align:center;">
+
+0.77
+
+</td>
+
+<td style="text-align:center;">
+
+0.80
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Sensitivity
+
+</td>
+
+<td style="text-align:center;">
+
+0.67
+
+</td>
+
+<td style="text-align:center;">
+
+0.78
+
+</td>
+
+<td style="text-align:center;">
+
+0.75
+
+</td>
+
+<td style="text-align:center;">
+
+0.75
 
 </td>
 
@@ -1022,7 +1152,7 @@ Specificity
 
 <td style="text-align:center;">
 
-0.64
+0.62
 
 </td>
 
@@ -1034,7 +1164,7 @@ Specificity
 
 <td style="text-align:center;">
 
-0.66
+0.71
 
 </td>
 
@@ -1056,25 +1186,40 @@ Youden index
 
 <td style="text-align:center;">
 
-0.41
+0.40
 
 </td>
 
 <td style="text-align:center;">
 
-0.41
+0.47
 
 </td>
 
 <td style="text-align:center;">
 
-0.44
+0.46
 
 </td>
 
 </tr>
 
 </tbody>
+
+<tfoot>
+
+<tr>
+
+<td style="padding: 0; " colspan="100%">
+
+<sup>\*</sup> Probability threshold used for predicting Diabetes. Values
+equal or greater than this threshold are mapped as “No”.
+
+</td>
+
+</tr>
+
+</tfoot>
 
 </table>
 
@@ -1084,7 +1229,7 @@ Youden index
 
 <div class="figure">
 
-<img src="docs/forest_plot_whr.svg" alt="Figure A.1: Forest plot showing significant effects for both BMI- and WHR-controlled multivariable logistic models." width="90%" />
+<img src="docs/forrest_plot_big.svg" alt="Figure A.1: Forest plot showing significant effects for both BMI- and WHR-controlled multivariable logistic models." width="90%" />
 
 <p class="caption">
 
@@ -2031,7 +2176,7 @@ Yes
 
 </tr>
 
-<tr grouplength="28">
+<tr grouplength="24">
 
 <td colspan="4" style="background-color: #666; color: #fff;">
 
@@ -2168,138 +2313,6 @@ Median (Q1, Q3)
 <td style="text-align:left;">
 
 34.0 (30.0, 42.0)
-
-</td>
-
-</tr>
-
-<tr grouplength="2">
-
-<td colspan="4" style="border-bottom: 0;">
-
-<strong>Household mean income (CAD/1000)</strong>
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left; padding-left:  2em;" indentlevel="2">
-
-Mean (SD)
-
-</td>
-
-<td style="text-align:left;">
-
-78.8 (27.3)
-
-</td>
-
-<td style="text-align:left;">
-
-71.6 (25.6)
-
-</td>
-
-<td style="text-align:left;">
-
-78.1 (27.2)
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left; padding-left:  2em;" indentlevel="2">
-
-Median (Q1, Q3)
-
-</td>
-
-<td style="text-align:left;">
-
-73.0 (61.0, 91.0)
-
-</td>
-
-<td style="text-align:left;">
-
-66.0 (53.0, 82.0)
-
-</td>
-
-<td style="text-align:left;">
-
-72.0 (60.0, 90.0)
-
-</td>
-
-</tr>
-
-<tr grouplength="2">
-
-<td colspan="4" style="border-bottom: 0;">
-
-<strong>Individual median income (CAD/1000)</strong>
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left; padding-left:  2em;" indentlevel="2">
-
-Mean (SD)
-
-</td>
-
-<td style="text-align:left;">
-
-28.1 (6.0)
-
-</td>
-
-<td style="text-align:left;">
-
-26.6 (5.9)
-
-</td>
-
-<td style="text-align:left;">
-
-27.9 (6.0)
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left; padding-left:  2em;" indentlevel="2">
-
-Median (Q1, Q3)
-
-</td>
-
-<td style="text-align:left;">
-
-28.0 (23.0, 32.0)
-
-</td>
-
-<td style="text-align:left;">
-
-25.0 (22.0, 31.0)
-
-</td>
-
-<td style="text-align:left;">
-
-28.0 (23.0, 32.0)
 
 </td>
 
@@ -3245,13 +3258,13 @@ Median (Q1, Q3)
 
 # About
 
-### Package contributors:
+### Package contributors
 
 Brinkmann, Sebastian Tobias (Package creator and author)  
 e-mail: <sebastian.brinkmann@fau.de>  
 Große, Tim (Contributor)
 
-### Thesis authors:
+### Thesis authors
 
 Walker, Blake Byron (1\*)  
 Brinkmann, Sebastian Tobias (1)  
@@ -3264,4 +3277,91 @@ Erlangen-Nürnberg, Wetterkreuz 15, 91052 Erlangen, Germany
 
 # Bibliography
 
-  - work in progress -
+<div id="refs" class="references">
+
+<div id="ref-Bauer.2016">
+
+Bauer, Jan, and David A. Groneberg. 2016. “Measuring Spatial
+Accessibility of Health Care Providers - Introduction of a Variable
+Distance Decay Function Within the Floating Catchment Area (Fca)
+Method.” *PloS One* 11 (7): e0159148.
+<https://doi.org/10.1371/journal.pone.0159148>.
+
+</div>
+
+<div id="ref-Fuertes.2014">
+
+Fuertes, Elaine, Iana Markevych, Andrea von Berg, Carl-Peter Bauer,
+Dietrich Berdel, Sibylle Koletzko, Dorothea Sugiri, and Joachim
+Heinrich. 2014. “Greenness and Allergies: Evidence of Differential
+Associations in Two Areas in Germany.” *Journal of Epidemiology and
+Community Health* 68 (8): 787–90.
+<https://doi.org/10.1136/jech-2014-203903>.
+
+</div>
+
+<div id="ref-Gong.2014">
+
+Gong, Yi, John Gallacher, Stephen Palmer, and David Fone. 2014.
+“Neighbourhood Green Space, Physical Function and Participation in
+Physical Activities Among Elderly Men: The Caerphilly Prospective
+Study.” *International Journal of Behavioral Nutrition and Physical
+Activity* 11 (1): 40. <https://doi.org/10.1186/1479-5868-11-40>.
+
+</div>
+
+<div id="ref-Hart.1968">
+
+Hart, Peter, Nils Nilsson, and Bertram Raphael. 1968. “A Formal Basis
+for the Heuristic Determination of Minimum Cost Paths.” *IEEE
+Transactions on Systems Science and Cybernetics* 4 (2): 100–107.
+<https://doi.org/10.1109/TSSC.1968.300136>.
+
+</div>
+
+<div id="ref-Jia.2019">
+
+Jia, Peng, Fahui Wang, and Imam M. Xierali. 2019. “Differential Effects
+of Distance Decay on Hospital Inpatient Visits Among Subpopulations in
+Florida, Usa.” *Environmental Monitoring and Assessment* 191 (Suppl 2):
+381. <https://doi.org/10.1007/s10661-019-7468-2>.
+
+</div>
+
+<div id="ref-MichaelDorman.2020">
+
+Michael Dorman. 2020. “Nngeo: K-Nearest Neighbor Join for Spatial Data.”
+<https://CRAN.R-project.org/package=nngeo>.
+
+</div>
+
+<div id="ref-Padgham.2017">
+
+Padgham, Mark, Robin Lovelace, Maëlle Salmon, and Bob Rudis. 2017.
+“Osmdata.” *Journal of Open Source Software* 2 (14): 305.
+<https://doi.org/10.21105/joss.00305>.
+
+</div>
+
+<div id="ref-Scarpone.2020">
+
+Scarpone, Christopher, Sebastian T. Brinkmann, Tim Große, Daniel
+Sonnenwald, Martin Fuchs, and Blake Byron Walker. 2020. “A Multimethod
+Approach for County-Scale Geospatial Analysis of Emerging Infectious
+Diseases: A Cross-Sectional Case Study of Covid-19 Incidence in
+Germany.” *International Journal of Health Geographics* 19 (1): 32.
+<https://doi.org/10.1186/s12942-020-00225-1>.
+
+</div>
+
+<div id="ref-Walker.2019">
+
+Walker, Blake Byron, Aateka Shashank, Danijela Gasevic, Nadine
+Schuurman, Paul Poirier, Koon Teo, Sumathy Rangarajan, Salim Yusuf, and
+Scott A. Lear. 2019. “The Local Food Environment and Obesity: Evidence
+from Three Cities.” *Obesity (Silver Spring, Md.)* 28 (1): 40–45.
+<https://doi.org/10.1002/oby.22614>.
+
+</div>
+
+</div>
